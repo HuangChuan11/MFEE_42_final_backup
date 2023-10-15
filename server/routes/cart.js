@@ -18,8 +18,10 @@ router.post('/sendOrder', async (req, res) => {
   const productDetail = req.body.productDetail;
   const courseDetail = req.body.courseDetail;
 
+  // console.log(req.body)
+  // console.log(orderList)
   // console.log(productDetail)
-  console.log(courseDetail)
+  // console.log(courseDetail)
 
   const OrderListSql = `
     INSERT INTO order_list(order_id, member_id, coupon_id, subtotal, payment, receive_name, receive_phone, receive_add, status) 
@@ -50,11 +52,11 @@ router.post('/sendOrder', async (req, res) => {
           orderList.order_id,
           product.product.id,
           product.product.name,
-          product.product.detail_1,
-          product.product.detail_2,
-          product.product.detail_3,
+          product.product.detail_1 || null,
+          product.product.detail_2 || null, 
+          product.product.detail_3 || null,
           product.product.quantity,
-          product.product.price,,
+          product.product.price,
         ]);
       }
     }

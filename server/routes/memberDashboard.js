@@ -1,9 +1,11 @@
 import express from 'express'
 const router = express.Router()
-
 import 'dotenv/config.js'
 import pool from '../config/db.js';
 
+import moment from 'moment';
+
+import { getMemberOrder } from '../models/member-order.js'
 
 //測試路由
 router.get('/', function (req, res) {
@@ -135,6 +137,92 @@ router.get('/FindUsedCoupon', async (req, res) => {
         console.error('搜尋已使用優惠券錯誤：', error);
         return res.status(500).json({
             message: "Find used coupons error",
+            code: "500"
+        });
+    }    
+});
+
+router.get('/FindOrderCoupon', async (req, res) => {
+    const memberId = req.query.memberId;
+    const UsedCouponSql = `
+    SELECT 
+    order_list.order_id AS order_id,
+    order_list.member_id,
+    order_list.coupon_id,
+    order_list.subtotal,
+    order_list.payment,
+    order_list.order_date,
+    coupon.name AS coupon_name,
+    coupon.discount AS coupon_discount,
+    coupon.type AS coupon_type,
+    coupon.deadline AS coupon_deadline,
+    coupon.valid AS coupon_valid
+    FROM order_list
+    LEFT JOIN coupon ON order_list.coupon_id = coupon.id
+    WHERE order_list.member_id = ? AND order_list.coupon_id <> 0;
+`;
+    const [rows] = await pool.query(UsedCouponSql, [memberId]);
+
+    try {
+        return res.json({
+            message: "Find Order coupons success",
+            code: "200",
+            UsedCoupons:rows
+        });
+    } catch (error) {
+        console.error('搜尋已使用優惠券錯誤：', error);
+        return res.status(500).json({
+            message: "Find Order coupons error",
+            code: "500"
+        });
+    }    
+});
+
+
+router.get(`/FindMemberOrder`, async (req, res) => {
+    const where = { member_id: req.query.memberId,status:'理貨中'};
+    const ordersData = await getMemberOrder(where);
+
+    //只取Date
+    ordersData.forEach(order => {
+        order.date = moment(order.order_date).format('YYYY-MM-DD');
+    });
+
+    try {
+        return res.json({
+            message: "Find member orders success",
+            code: "200",
+            ordersData
+        });
+    } catch (error) {
+        console.error('DB搜尋會員訂單錯誤', error);
+        return res.status(500).json({
+            message: "Find member orders error",
+            code: "500"
+        });
+    }    
+});
+
+
+router.get(`/FindFinishedOrder`, async (req, res) => {
+    const where = { member_id: req.query.memberId,status:'已完成'};
+    const finishedOrder = await getMemberOrder(where);
+
+    //只取Date
+    finishedOrder.forEach(order => {
+        order.date = moment(order.order_date).format('YYYY-MM-DD');
+    });
+
+    try {
+        return res.json({
+            message: "Find member orders success",
+            code: "200",
+            finishedOrder
+        });
+    } catch (error) {
+        console.error('DB搜尋會員訂單錯誤', error);
+        return res.status(500).json({
+            message: "Find member orders error",
             code: "500"
         });
     }    
