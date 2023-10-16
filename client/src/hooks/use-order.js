@@ -3,7 +3,6 @@ import React, {
   useContext,
   createContext,
   useEffect,
-  use,
 } from "react";
 
 const OrderContext = createContext(null);
@@ -19,9 +18,9 @@ export const OrderProvider = ({ children }) => {
     discount:0,
   });
 
-  useEffect(() => {
-    setOrderInfo(orderInfo);
-  }, [orderInfo]);
+  // useEffect(() => {
+  //   setOrderInfo(orderInfo);
+  // }, [orderInfo]);
   return (
     <OrderContext.Provider value={{ orderInfo, setOrderInfo }}>
       {children}
